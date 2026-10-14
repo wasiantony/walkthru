@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+/*
+  Large-type design tokens. Defined once here; every screen uses them.
+  Base text 20px, step instructions 24px, nothing below 18px anywhere.
+  Tap targets at least 56px tall.
+*/
+@theme {
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* Replace Tailwind's small sizes so nothing can render under 18px. */
+  --text-xs: 1.125rem;    /* 18px - the minimum */
+  --text-sm: 1.125rem;    /* 18px */
+  --text-base: 1.25rem;   /* 20px - body */
+  --text-lg: 1.5rem;      /* 24px - step instructions */
+  --text-xl: 1.75rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.5rem;
+
+  --spacing-tap: 3.5rem;  /* 56px minimum tap target */
+
+  /* High-contrast palette. Ink on paper is ~17:1. */
+  --color-paper: #ffffff;
+  --color-ink: #111111;
+  --color-ink-soft: #3a3a3a;
+  --color-action: #0b4fbd;
+  --color-action-ink: #ffffff;
+  --color-highlight: #ff6a00;
+  --color-line: #8a8a8a;
+}
+
+html {
+  font-size: 100%;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+}

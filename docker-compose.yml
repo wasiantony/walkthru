@@ -1,0 +1,62 @@
+# Local and single-server deployment: Postgres + a one-shot migrate/seed job + the app.
+# Set POSTGRES_PASSWORD (and any other overrides) in a .env file next to this one.
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-walkthrough}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-walkthrough_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-walkthrough}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Bound to localhost only, so `npm run dev` on this machine can use it.
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Applies database migrations, then loads /library into the database.
+  # Runs once per `docker compose up` and exits.
+  migrate:
+    build:
+      context: .
+      target: builder
+    command: sh -c "npx prisma migrate deploy && npx prisma db seed"
+    user: node
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-walkthrough}:${POSTGRES_PASSWORD:-walkthrough_dev}@db:5432/${POSTGRES_DB:-walkthrough}
+      STORAGE_DRIVER: local
+      STORAGE_DIR: /app/storage
+    volumes:
+      - storage:/app/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-walkthrough}:${POSTGRES_PASSWORD:-walkthrough_dev}@db:5432/${POSTGRES_DB:-walkthrough}
+      STORAGE_DRIVER: local
+      STORAGE_DIR: /app/storage
+    volumes:
+      - storage:/app/storage
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata:
+  storage:

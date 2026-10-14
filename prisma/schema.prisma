@@ -1,0 +1,140 @@
+// Tech Walkthrough data model.
+// Every tenant-scoped table carries organization_id. On Walkthrough and Step a
+// null organization_id means the row belongs to the shared global library.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Device {
+  iphone
+  windows
+}
+
+enum WalkthroughStatus {
+  draft
+  published
+}
+
+enum HighlightType {
+  box
+  arrow
+}
+
+enum ArrowDirection {
+  up
+  down
+  left
+  right
+}
+
+model Organization {
+  id             String   @id @default(cuid())
+  name           String
+  accessCode     String   @unique @map("access_code")
+  enabledDevices Device[] @map("enabled_devices")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  walkthroughs       Walkthrough[]
+  steps              Step[]
+  queryLogs          QueryLog[]
+  hiddenWalkthroughs HiddenWalkthrough[]
+
+  @@map("organizations")
+}
+
+model Walkthrough {
+  id             String            @id @default(cuid())
+  // null = shared global library
+  organizationId String?           @map("organization_id")
+  slug           String
+  title          String
+  device         Device
+  osVersions     String[]          @map("os_versions")
+  category       String
+  summary        String
+  synonyms       String[]
+  bonusTip       String?           @map("bonus_tip")
+  status         WalkthroughStatus @default(draft)
+  verifiedBy     String?           @map("verified_by")
+  verifiedOn     DateTime?         @map("verified_on") @db.Date
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  organization Organization?       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  steps        Step[]
+  queryLogs    QueryLog[]
+  hiddenBy     HiddenWalkthrough[]
+
+  // Postgres treats NULLs as distinct, so global slugs get their own partial
+  // unique index in the init migration (walkthroughs_global_slug_key).
+  @@unique([organizationId, slug])
+  @@index([device, status])
+  @@map("walkthroughs")
+}
+
+model Step {
+  id                 String  @id @default(cuid())
+  walkthroughId      String  @map("walkthrough_id")
+  // Mirrors the parent walkthrough's organization_id (null = global).
+  organizationId     String? @map("organization_id")
+  order              Int
+  text               String
+  // Storage key for the screenshot (local disk or S3 bucket).
+  imageKey           String  @map("image_key")
+  // True while the step still shows a "Screenshot needed" placeholder.
+  imageIsPlaceholder Boolean @default(false) @map("image_is_placeholder")
+
+  // Highlight coordinates are percentages (0-100) of the image's width and
+  // height so they scale with the screenshot. A box uses x, y, w, h. An arrow
+  // points at (x, y) from the given direction; w and h are unused.
+  highlightType      HighlightType?  @map("highlight_type")
+  highlightX         Float?          @map("highlight_x")
+  highlightY         Float?          @map("highlight_y")
+  highlightW         Float?          @map("highlight_w")
+  highlightH         Float?          @map("highlight_h")
+  highlightDirection ArrowDirection? @map("highlight_direction")
+
+  walkthrough  Walkthrough   @relation(fields: [walkthroughId], references: [id], onDelete: Cascade)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([walkthroughId, order])
+  @@index([organizationId])
+  @@map("steps")
+}
+
+// Lets an organization hide a global walkthrough from its staff.
+model HiddenWalkthrough {
+  organizationId String   @map("organization_id")
+  walkthroughId  String   @map("walkthrough_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  walkthrough  Walkthrough  @relation(fields: [walkthroughId], references: [id], onDelete: Cascade)
+
+  @@id([organizationId, walkthroughId])
+  @@map("hidden_walkthroughs")
+}
+
+// No personal identifiers: question text is scrubbed before it is stored.
+model QueryLog {
+  id                   String   @id @default(cuid())
+  organizationId       String   @map("organization_id")
+  questionText         String   @map("question_text")
+  matchedWalkthroughId String?  @map("matched_walkthrough_id")
+  confidence           Float?
+  solved               Boolean?
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  matchedWalkthrough Walkthrough? @relation(fields: [matchedWalkthroughId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
+  @@map("query_logs")
+}

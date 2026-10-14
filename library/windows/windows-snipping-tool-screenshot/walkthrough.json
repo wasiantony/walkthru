@@ -1,0 +1,77 @@
+{
+  "slug": "windows-snipping-tool-screenshot",
+  "title": "Take a picture of part of my screen",
+  "device": "windows",
+  "os_versions": ["Windows 11"],
+  "category": "Screen and text",
+  "summary": "Use the Snipping Tool to capture part of your screen and paste it into an email.",
+  "synonyms": [
+    "screenshot",
+    "snip",
+    "screen capture",
+    "print screen",
+    "copy what's on my screen",
+    "snipping tool",
+    "picture of my screen"
+  ],
+  "bonus_tip": "A faster way for next time: press the Windows key, Shift, and S together to start a new picture.",
+  "status": "draft",
+  "verified_by": null,
+  "verified_on": null,
+  "steps": [
+    {
+      "order": 1,
+      "text": "Click the Start button: the four blue squares at the bottom of your screen.",
+      "image": "step-01.placeholder.png",
+      "highlight": { "type": "box", "x": 35, "y": 93, "w": 4, "h": 7 }
+    },
+    {
+      "order": 2,
+      "text": "Type the words Snipping Tool.",
+      "image": "step-02.placeholder.png",
+      "highlight": { "type": "box", "x": 30, "y": 16, "w": 40, "h": 7 }
+    },
+    {
+      "order": 3,
+      "text": "Click Snipping Tool at the top of the list.",
+      "image": "step-03.placeholder.png",
+      "highlight": { "type": "box", "x": 30, "y": 28, "w": 22, "h": 14 }
+    },
+    {
+      "order": 4,
+      "text": "Click the New button near the top left of the Snipping Tool window.",
+      "image": "step-04.placeholder.png",
+      "highlight": { "type": "box", "x": 4, "y": 6, "w": 9, "h": 7 }
+    },
+    {
+      "order": 5,
+      "text": "Hold the mouse button down and drag a box around the part you want.",
+      "image": "step-05.placeholder.png",
+      "highlight": { "type": "box", "x": 25, "y": 25, "w": 50, "h": 45 }
+    },
+    {
+      "order": 6,
+      "text": "Let go of the mouse button to take the picture.",
+      "image": "step-06.placeholder.png",
+      "highlight": null
+    },
+    {
+      "order": 7,
+      "text": "Click inside your email where you want the picture to go.",
+      "image": "step-07.placeholder.png",
+      "highlight": { "type": "box", "x": 20, "y": 40, "w": 60, "h": 30 }
+    },
+    {
+      "order": 8,
+      "text": "Press the button on the right side of your mouse.",
+      "image": "step-08.placeholder.png",
+      "highlight": null
+    },
+    {
+      "order": 9,
+      "text": "Click Paste in the small list that appears.",
+      "image": "step-09.placeholder.png",
+      "highlight": { "type": "arrow", "x": 42, "y": 52, "direction": "left" }
+    }
+  ]
+}

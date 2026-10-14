@@ -1,0 +1,59 @@
+{
+  "slug": "iphone-make-text-bigger",
+  "title": "Make the text on my phone bigger",
+  "device": "iphone",
+  "os_versions": ["iOS 26"],
+  "category": "Basics and comfort",
+  "summary": "Make the words on your iPhone bigger and easier to read using the Text Size setting.",
+  "synonyms": [
+    "text too small",
+    "bigger words",
+    "font size",
+    "make the writing larger",
+    "can't read my phone",
+    "increase text size",
+    "words are tiny"
+  ],
+  "bonus_tip": "Need the words even bigger? In Settings, open Accessibility, then Display & Text Size, then Larger Text.",
+  "status": "draft",
+  "verified_by": null,
+  "verified_on": null,
+  "steps": [
+    {
+      "order": 1,
+      "text": "Tap the grey picture of gears called Settings.",
+      "image": "step-01.placeholder.png",
+      "highlight": { "type": "box", "x": 6, "y": 38, "w": 20, "h": 10 }
+    },
+    {
+      "order": 2,
+      "text": "Scroll down slowly until you see Display & Brightness.",
+      "image": "step-02.placeholder.png",
+      "highlight": null
+    },
+    {
+      "order": 3,
+      "text": "Tap Display & Brightness.",
+      "image": "step-03.placeholder.png",
+      "highlight": { "type": "box", "x": 4, "y": 46, "w": 92, "h": 6 }
+    },
+    {
+      "order": 4,
+      "text": "Tap Text Size.",
+      "image": "step-04.placeholder.png",
+      "highlight": { "type": "box", "x": 4, "y": 58, "w": 92, "h": 6 }
+    },
+    {
+      "order": 5,
+      "text": "Drag the slider at the bottom to the right to make the words bigger.",
+      "image": "step-05.placeholder.png",
+      "highlight": { "type": "box", "x": 6, "y": 82, "w": 88, "h": 8 }
+    },
+    {
+      "order": 6,
+      "text": "Look at the sample words at the top and stop when they are easy to read.",
+      "image": "step-06.placeholder.png",
+      "highlight": { "type": "box", "x": 6, "y": 14, "w": 88, "h": 22 }
+    }
+  ]
+}
