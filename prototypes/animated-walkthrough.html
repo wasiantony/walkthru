@@ -1,0 +1,672 @@
+<title>Bigger Text Walkthrough</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap">
+<style>
+/* Layout: on phones it stacks step count, words, drawing, buttons; on laptops the phone drawing sits beside one big instruction column. */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --stage: #e2e7ee;
+  --ink: #0e1621;
+  --ink-soft: #3b4654;
+  --track: #d3dae3;
+  --action: #0842a8;
+  --action-ink: #ffffff;
+  --focus: #ff6a00;
+  --note-bg: #fff3e2;
+  --note-ink: #4a2a00;
+  --good: #0b6b3a;
+  --font-ui: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-phone: -apple-system, "SF Pro Text", system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1318; --surface: #171d24; --stage: #1b222b; --ink: #f1f4f8; --ink-soft: #c2cbd6;
+    --track: #2c3542; --action: #8db8ff; --action-ink: #0a1424; --focus: #ff8a3d;
+    --note-bg: #2a2116; --note-ink: #ffdcb0; --good: #74d6a0; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1318; --surface: #171d24; --stage: #1b222b; --ink: #f1f4f8; --ink-soft: #c2cbd6;
+  --track: #2c3542; --action: #8db8ff; --action-ink: #0a1424; --focus: #ff8a3d;
+  --note-bg: #2a2116; --note-ink: #ffdcb0; --good: #74d6a0; color-scheme: dark;
+}
+
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 20px/1.45 var(--font-ui); }
+
+.app {
+  box-sizing: border-box; height: 100%; max-width: 1240px; margin: 0 auto;
+  padding-block: 12px; padding-inline: 16px;
+  display: grid; gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-areas: "head" "words" "stage" "nav";
+}
+.side { display: contents; }
+
+.head { grid-area: head; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.meta { min-width: 0; }
+.task { margin: 0; font-size: 18px; color: var(--ink-soft); }
+.count { margin: 0; font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.progress { flex-basis: 100%; height: 8px; border-radius: 99px; background: var(--track); overflow: hidden; }
+.progress span { display: block; height: 100%; width: 0; background: var(--action); border-radius: inherit; transition: width .3s ease; }
+
+.words { grid-area: words; margin: 0; font-size: 26px; line-height: 1.3; font-weight: 700; text-wrap: pretty; }
+
+.stage { grid-area: stage; position: relative; min-height: 260px; display: grid; place-items: center; background: var(--stage); border-radius: 20px; overflow: hidden; }
+.fit { position: relative; }
+
+.nav { grid-area: nav; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+
+.btn {
+  box-sizing: border-box; min-height: 64px; padding: 8px 14px; border-radius: 14px;
+  border: 2px solid var(--action); background: var(--surface); color: var(--action);
+  font: 700 20px/1.15 var(--font-ui); cursor: pointer; text-align: center;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn.primary { background: var(--action); color: var(--action-ink); }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn.speak { min-height: 56px; }
+
+.done { grid-column: 1 / -1; grid-row: 2 / -1; display: flex; flex-direction: column; gap: 20px; max-width: 640px; width: 100%; margin: 0 auto; overflow-y: auto; padding-block: 8px; }
+.done h2 { margin: 0; font-size: 34px; line-height: 1.2; text-wrap: balance; }
+.answers, .done-nav { display: grid; gap: 12px; }
+.result { margin: 0; font-size: 24px; font-weight: 700; }
+.result.good { color: var(--good); }
+.plain { margin: 0; color: var(--ink-soft); }
+.tip { background: var(--note-bg); color: var(--note-ink); border-radius: 16px; padding: 16px 18px; }
+.tip h3 { margin: 0 0 4px; font-size: 20px; }
+.tip p { margin: 0; }
+.app.is-done .words, .app.is-done .stage, .app.is-done .nav { display: none; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (min-width: 900px) {
+  .app {
+    padding-block: 24px; padding-inline: 32px; gap: 20px 40px;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: "head head" "stage side";
+  }
+  .side { grid-area: side; display: flex; flex-direction: column; justify-content: center; gap: 28px; }
+  .words { font-size: 34px; }
+  .nav { grid-template-columns: 1fr 1fr; }
+  .nav #replay { grid-column: 1 / -1; order: -1; }
+  .app.is-done .side { display: none; }
+}
+
+/* ---------- The phone drawing (always drawn in the phone's light mode) ---------- */
+.phone { position: absolute; left: 0; top: 0; width: 406px; height: 860px; box-sizing: border-box; padding: 8px; border-radius: 62px; background: #1c1d20; box-shadow: 0 18px 40px rgba(0,0,0,.28); transform-origin: 0 0; }
+.screen { position: relative; width: 390px; height: 844px; border-radius: 54px; overflow: hidden; background: #000; color: #000; font-family: var(--font-phone); -webkit-font-smoothing: antialiased; }
+.scr { position: absolute; inset: 0; overflow: hidden; }
+.island { position: absolute; top: 11px; left: 50%; width: 124px; height: 36px; margin-left: -62px; border-radius: 20px; background: #000; z-index: 5; }
+.status { position: absolute; top: 0; left: 0; right: 0; height: 54px; box-sizing: border-box; padding: 0 30px 0 50px; display: flex; align-items: center; justify-content: space-between; font-size: 17px; font-weight: 600; z-index: 4; }
+.status svg { display: block; }
+.on-dark { color: #fff; }
+.homebar { position: absolute; bottom: 8px; left: 50%; width: 140px; height: 5px; margin-left: -70px; border-radius: 3px; background: #111; z-index: 4; }
+.homebar.on-dark { background: #fff; }
+
+.hl { position: absolute; box-sizing: border-box; border: 5px solid #ff6a00; outline: 2px solid #fff; border-radius: 16px; z-index: 6; pointer-events: none; opacity: 0; transition: opacity .25s ease; }
+.hl.show { opacity: 1; }
+.finger, .ripple { position: absolute; left: 0; top: 0; width: 58px; height: 58px; box-sizing: border-box; border-radius: 50%; pointer-events: none; z-index: 7; opacity: 0; }
+.finger { background: rgba(30,32,36,.38); border: 3px solid rgba(255,255,255,.95); box-shadow: 0 4px 14px rgba(0,0,0,.35); }
+.ripple { border: 4px solid #fff; }
+
+/* Home screen */
+.home { background: linear-gradient(165deg, #2f5fc4 0%, #4f9fd0 45%, #8fd6c2 100%); }
+.grid { position: absolute; top: 76px; left: 18px; right: 18px; display: grid; grid-template-columns: repeat(4, 1fr); row-gap: 22px; }
+.cell { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 4px 0; }
+.tile { display: block; width: 62px; height: 62px; border-radius: 15px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+.tile svg { display: block; width: 100%; height: 100%; }
+.cell span { font-size: 12.5px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+.searchpill { position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%); padding: 6px 14px; border-radius: 14px; background: rgba(255,255,255,.28); color: #fff; font-size: 14px; font-weight: 600; }
+.dock { position: absolute; left: 14px; right: 14px; bottom: 22px; height: 94px; border-radius: 36px; background: rgba(255,255,255,.3); display: flex; align-items: center; justify-content: space-around; }
+
+/* Settings-style lists */
+.ios { background: #f2f2f7; }
+.ios .status { background: #f2f2f7; }
+.scroller { position: absolute; top: 0; left: 0; right: 0; padding-top: 54px; will-change: transform; }
+.large-title { margin: 8px 20px 10px; font-size: 34px; font-weight: 700; }
+.search { margin: 0 16px 22px; height: 38px; padding: 0 10px; border-radius: 11px; background: #e3e3e8; color: #8a8a8e; display: flex; align-items: center; gap: 6px; font-size: 17px; }
+.group { margin: 0 16px 30px; border-radius: 14px; background: #fff; overflow: hidden; }
+.row { position: relative; display: flex; align-items: center; gap: 14px; min-height: 52px; padding: 0 14px; font-size: 17px; }
+.row + .row::before { content: ""; position: absolute; top: 0; left: 58px; right: 0; height: 1px; background: #e1e1e6; }
+.row.plain-row + .row.plain-row::before { left: 16px; }
+.ico { flex: none; width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; }
+.ico svg { width: 20px; height: 20px; display: block; }
+.label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.value { color: #8a8a8e; }
+.chev { color: #c4c4c7; font-size: 24px; line-height: 1; }
+.switch { flex: none; position: relative; width: 51px; height: 31px; border-radius: 16px; background: #e9e9eb; }
+.switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.2); }
+.profile { min-height: 74px; }
+.avatar { flex: none; width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(#a3a8b2, #868b95); color: #fff; font-size: 20px; font-weight: 600; display: grid; place-items: center; }
+.sub { display: block; font-size: 13px; color: #8a8a8e; }
+
+.navbar { position: absolute; top: 54px; left: 0; right: 0; height: 50px; display: flex; align-items: center; justify-content: center; background: #f2f2f7; font-size: 17px; font-weight: 600; z-index: 3; }
+.back { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 4px; color: #0a7aff; font-weight: 400; }
+.back b { font-size: 32px; font-weight: 400; line-height: 0; position: relative; top: -2px; }
+.page { position: absolute; top: 104px; left: 0; right: 0; bottom: 0; padding-top: 12px; }
+.sechead { margin: 0 32px 8px; font-size: 13px; color: #6d6d72; text-transform: uppercase; letter-spacing: .3px; }
+.appearance { display: flex; justify-content: space-around; padding: 18px 10px 14px; }
+.mode { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 15px; }
+.mini { box-sizing: border-box; width: 62px; height: 118px; padding: 14px 8px; border-radius: 12px; border: 1px solid #d1d1d6; display: flex; flex-direction: column; gap: 6px; background: #fff; }
+.mini i { display: block; height: 6px; border-radius: 3px; background: #d1d1d6; }
+.mini.dark { background: #1c1c1e; border-color: #1c1c1e; }
+.mini.dark i { background: #48484a; }
+.radio { box-sizing: border-box; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid #c7c7cc; display: grid; place-items: center; }
+.radio.on { background: #0a7aff; border-color: #0a7aff; }
+.bright { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 16px; }
+.bright .bar { flex: 1; height: 6px; border-radius: 3px; background: linear-gradient(to right, #0a7aff 62%, #e3e3e8 62%); }
+
+/* Text Size screen */
+.sample { margin: 14px 18px; padding: 8px 6px; border-radius: 12px; font-size: 17px; line-height: 1.35; }
+.sizer { position: absolute; left: 0; right: 0; bottom: 0; height: 150px; box-sizing: border-box; padding: 0 22px 26px; background: #fff; border-top: 1px solid #e1e1e6; display: flex; align-items: center; gap: 14px; }
+.sizer .a1 { font-size: 14px; }
+.sizer .a2 { font-size: 26px; }
+.strack { position: relative; flex: 1; height: 34px; }
+.strack .line { position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; background: #c7c7cc; }
+.tick { position: absolute; top: 50%; width: 2px; height: 12px; margin: -6px 0 0 -1px; background: #c7c7cc; }
+.thumb { position: absolute; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25), 0 0 0 .5px rgba(0,0,0,.08); }
+
+@media (prefers-reduced-motion: reduce) {
+  .progress span, .hl { transition: none; }
+}
+</style>
+
+<main class="app" id="app">
+  <header class="head">
+    <div class="meta">
+      <p class="task">Make the text on my phone bigger · Prototype</p>
+      <p class="count" id="count">Step 1 of 6</p>
+    </div>
+    <button class="btn speak" id="speak" type="button">Read this step aloud</button>
+    <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  </header>
+
+  <div class="side">
+    <p class="words" id="words"></p>
+    <nav class="nav" aria-label="Steps">
+      <button class="btn" id="back" type="button"><span aria-hidden="true">←</span> Back</button>
+      <button class="btn" id="replay" type="button">Show me again</button>
+      <button class="btn primary" id="next" type="button">Next <span aria-hidden="true">→</span></button>
+    </nav>
+  </div>
+
+  <section class="stage" id="stage" role="img" aria-label="">
+    <div class="fit" id="fit">
+      <div class="phone" id="phone" aria-hidden="true">
+        <div class="screen" id="screen">
+          <div class="island"></div>
+
+          <!-- HOME SCREEN -->
+          <div class="scr home" data-screen="home">
+            <div class="status on-dark"><span>9:41</span><span class="status-icons"></span></div>
+            <div class="grid">
+              <div class="cell"><span class="tile"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#fff"/><text x="32" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="#f2453d" font-family="Arial">TUE</text><text x="32" y="49" text-anchor="middle" font-size="30" fill="#111" font-family="Arial">13</text></svg></span><span>Calendar</span></div>
+              <div class="cell"><span class="tile"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#fff"/><g opacity=".85"><circle cx="32" cy="20" r="9" fill="#f9b233"/><circle cx="43" cy="27" r="9" fill="#9bd23c"/><circle cx="41" cy="40" r="9" fill="#2fb6e8"/><circle cx="29" cy="44" r="9" fill="#5b6ee8"/><circle cx="20" cy="35" r="9" fill="#d649a7"/><circle cx="22" cy="23" r="9" fill="#f5603d"/></g></svg></span><span>Photos</span></div>
+              <div class="cell"><span class="tile"><svg viewBox="0 0 64 64"><defs><linearGradient id="gcam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2e2e4"/><stop offset="1" stop-color="#a4a5aa"/></linearGradient></defs><rect width="64" height="64" fill="url(#gcam)"/><rect x="12" y="22" width="40" height="26" rx="5" fill="#2b2c30"/><rect x="24" y="17" width="16" height="7" rx="2" fill="#2b2c30"/><circle cx="32" cy="35" r="9" fill="#5c6068"/><circle cx="32" cy="35" r="5" fill="#1a1b1e"/></svg></span><span>Camera</span></div>
+              <div class="cell"><span class="tile"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#fff"/><circle cx="17" cy="20" r="4" fill="#ff9f0a"/><circle cx="17" cy="32" r="4" fill="#0a84ff"/><circle cx="17" cy="44" r="4" fill="#ff453a"/><rect x="26" y="19" width="26" height="2.5" rx="1" fill="#c7c7cc"/><rect x="26" y="31" width="26" height="2.5" rx="1" fill="#c7c7cc"/><rect x="26" y="43" width="26" height="2.5" rx="1" fill="#c7c7cc"/></svg></span><span>Reminders</span></div>
+              <div class="cell"><span class="tile"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#111"/><circle cx="32" cy="32" r="24" fill="#fff"/><line x1="32" y1="32" x2="32" y2="15" stroke="#111" stroke-width="3" stroke-linecap="round"/><line x1="32" y1="32" x2="43" y2="38" stroke="#111" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="32" r="2.5" fill="#ff9f0a"/></svg></span><span>Clock</span></div>
+              <div class="cell"><span class="tile"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#dfeccf"/><rect x="-10" y="38" width="90" height="9" fill="#f6d36b" transform="rotate(-30 32 32)"/><rect x="28" y="-10" width="8" height="90" fill="#fff" transform="rotate(20 32 32)"/><circle cx="40" cy="22" r="6" fill="#0a84ff" stroke="#fff" stroke-width="3"/></svg></span><span>Maps</span></div>
+              <div class="cell"><span class="tile"><svg viewBox="0 0 64 64"><defs><linearGradient id="gwx" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2e7be0"/><stop offset="1" stop-color="#6fb4f2"/></linearGradient></defs><rect width="64" height="64" fill="url(#gwx)"/><circle cx="24" cy="24" r="10" fill="#ffd60a"/><ellipse cx="38" cy="40" rx="16" ry="9" fill="#fff"/><circle cx="31" cy="35" r="8" fill="#fff"/></svg></span><span>Weather</span></div>
+              <div class="cell"><span class="tile"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#fff"/><rect width="64" height="16" fill="#ffd34d"/><rect x="10" y="26" width="44" height="2.5" fill="#d1d1d6"/><rect x="10" y="36" width="44" height="2.5" fill="#d1d1d6"/><rect x="10" y="46" width="30" height="2.5" fill="#d1d1d6"/></svg></span><span>Notes</span></div>
+              <div class="cell" id="app-settings"><span class="tile"><svg viewBox="0 0 64 64" id="settings-icon"></svg></span><span>Settings</span></div>
+              <div class="cell"><span class="tile"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#1e7cf2"/><path d="M14 22h14l4 5h18v19H14z" fill="#fff"/></svg></span><span>Files</span></div>
+              <div class="cell"><span class="tile"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#e4e4e8"/><circle cx="32" cy="25" r="9" fill="#8e8e93"/><path d="M15 50c2-10 9-14 17-14s15 4 17 14z" fill="#8e8e93"/></svg></span><span>Contacts</span></div>
+              <div class="cell"><span class="tile"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#1c1c1e"/><circle cx="19" cy="20" r="6" fill="#a5a5aa"/><circle cx="32" cy="20" r="6" fill="#a5a5aa"/><circle cx="45" cy="20" r="6" fill="#ff9f0a"/><circle cx="19" cy="33" r="6" fill="#505055"/><circle cx="32" cy="33" r="6" fill="#505055"/><circle cx="45" cy="33" r="6" fill="#ff9f0a"/><circle cx="19" cy="46" r="6" fill="#505055"/><circle cx="32" cy="46" r="6" fill="#505055"/><circle cx="45" cy="46" r="6" fill="#ff9f0a"/></svg></span><span>Calculator</span></div>
+            </div>
+            <div class="searchpill">Search</div>
+            <div class="dock">
+              <span class="tile"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#34c759"/><path d="M21 15c2-1 4 0 5 2l3 6c1 2 0 4-1 5l-3 2c2 5 6 9 11 11l2-3c1-1 3-2 5-1l6 3c2 1 3 3 2 5l-2 4c-2 3-6 4-10 2-9-4-17-12-21-21-2-4-1-8 2-10z" fill="#fff"/></svg></span>
+              <span class="tile"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#34c759"/><ellipse cx="32" cy="30" rx="19" ry="15" fill="#fff"/><path d="M17 44l3-9 8 6z" fill="#fff"/></svg></span>
+              <span class="tile"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#1e7cf2"/><rect x="12" y="19" width="40" height="27" rx="3" fill="#fff"/><path d="M13 21l19 14 19-14" fill="none" stroke="#1e7cf2" stroke-width="3"/></svg></span>
+              <span class="tile"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#fa2d48"/><path d="M28 16l16-4v28" fill="none" stroke="#fff" stroke-width="4"/><path d="M28 16v28" stroke="#fff" stroke-width="4"/><circle cx="24" cy="45" r="6" fill="#fff"/><circle cx="40" cy="41" r="6" fill="#fff"/></svg></span>
+            </div>
+            <div class="homebar on-dark"></div>
+          </div>
+
+          <!-- SETTINGS -->
+          <div class="scr ios" data-screen="settings" hidden>
+            <div class="status"><span>9:41</span><span class="status-icons"></span></div>
+            <div class="scroller" id="scroller">
+              <div class="large-title">Settings</div>
+              <div class="search"><svg width="18" height="18" viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="6" fill="none" stroke="#8a8a8e" stroke-width="2"/><line x1="13" y1="13" x2="18" y2="18" stroke="#8a8a8e" stroke-width="2" stroke-linecap="round"/></svg>Search</div>
+              <div class="group"><div class="row profile"><span class="avatar">YN</span><span class="label">Your Name<span class="sub">Account, iCloud and more</span></span><span class="chev">›</span></div></div>
+              <div class="group" data-rows="Airplane Mode:#ff9500:plane:switch|Wi‑Fi:#0a7aff:wifi:Office|Bluetooth:#0a7aff:dot:On|Mobile Service:#34c759:bars:"></div>
+              <div class="group" data-rows="Notifications:#ff3b30:bell:|Sounds &amp; Haptics:#ff2d55:dot:|Focus:#5856d6:moon:|Screen Time:#5856d6:dot:"></div>
+              <div class="group" data-rows="General:#8e8e93:gear:|Accessibility:#0a7aff:person:|Camera:#8e8e93:dot:|Control Centre:#8e8e93:dot:|Display &amp; Brightness:#0a7aff:sun::row-display|Home Screen &amp; App Library:#5856d6:dot:|Search:#8e8e93:dot:|Wallpaper:#32ade6:dot:"></div>
+            </div>
+            <div class="homebar"></div>
+          </div>
+
+          <!-- DISPLAY & BRIGHTNESS -->
+          <div class="scr ios" data-screen="display" hidden>
+            <div class="status"><span>9:41</span><span class="status-icons"></span></div>
+            <div class="navbar"><span class="back"><b>‹</b>Settings</span>Display &amp; Brightness</div>
+            <div class="page">
+              <p class="sechead">Appearance</p>
+              <div class="group">
+                <div class="appearance">
+                  <div class="mode"><div class="mini"><i></i><i></i><i></i></div>Light<span class="radio on"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3.5" fill="none" stroke="#fff" stroke-width="2"/></svg></span></div>
+                  <div class="mode"><div class="mini dark"><i></i><i></i><i></i></div>Dark<span class="radio"></span></div>
+                </div>
+                <div class="row plain-row"><span class="label">Automatic</span><span class="switch"></span></div>
+              </div>
+              <div class="group">
+                <div class="row plain-row" id="row-textsize"><span class="label">Text Size</span><span class="chev">›</span></div>
+                <div class="row plain-row"><span class="label">Bold Text</span><span class="switch"></span></div>
+              </div>
+              <p class="sechead">Brightness</p>
+              <div class="group"><div class="bright"><svg width="16" height="16" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4" fill="#8e8e93"/></svg><span class="bar"></span><svg width="22" height="22" viewBox="0 0 20 20"><circle cx="10" cy="10" r="5" fill="#8e8e93"/></svg></div></div>
+              <div class="group">
+                <div class="row plain-row"><span class="label">Night Shift</span><span class="value">Off</span><span class="chev">›</span></div>
+                <div class="row plain-row"><span class="label">Auto-Lock</span><span class="value">30 seconds</span><span class="chev">›</span></div>
+              </div>
+            </div>
+            <div class="homebar"></div>
+          </div>
+
+          <!-- TEXT SIZE -->
+          <div class="scr ios" data-screen="textsize" hidden>
+            <div class="status"><span>9:41</span><span class="status-icons"></span></div>
+            <div class="navbar"><span class="back"><b>‹</b>Back</span>Text Size</div>
+            <div class="page">
+              <p class="sample" id="sample-text">Apps that support this setting will change to the reading size you choose below.</p>
+            </div>
+            <div class="sizer" id="slider">
+              <span class="a1">A</span>
+              <div class="strack" id="strack"><div class="line"></div><div id="thumb" class="thumb"></div></div>
+              <span class="a2">A</span>
+            </div>
+            <div class="homebar"></div>
+          </div>
+
+          <div class="hl" id="hl"></div>
+          <div class="ripple" id="ripple"></div>
+          <div class="finger" id="finger"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="done" id="done" hidden aria-labelledby="done-q">
+    <h2 id="done-q" tabindex="-1">Did this solve it?</h2>
+    <div class="answers" id="answers">
+      <button class="btn primary" id="yes" type="button">Yes, it worked</button>
+      <button class="btn" id="no" type="button">No, I still need help</button>
+    </div>
+    <div id="after-yes" hidden><p class="result good">Great work. Your words are bigger now.</p></div>
+    <div id="after-no" hidden class="answers">
+      <p class="result">That's okay. Someone can help you.</p>
+      <button class="btn primary" id="ask" type="button">Ask someone for help</button>
+      <p class="plain" id="asked" hidden>In the real app, this sends your question to your IT contact. This prototype does not send anything.</p>
+    </div>
+    <aside class="tip">
+      <h3>Extra tip</h3>
+      <p>Need the words even bigger? In Settings, open Accessibility, then Display &amp; Text Size, then Larger Text.</p>
+    </aside>
+    <div class="done-nav">
+      <button class="btn" id="again" type="button">Go back to the steps</button>
+      <button class="btn" id="restart" type="button">Start over</button>
+    </div>
+  </section>
+
+  <p class="sr-only" id="live" aria-live="polite"></p>
+</main>
+
+<script>
+// Each step is plain data: which screen to draw, what the hand does, and what
+// gets the orange outline. This is the shape walkthrough.json would store
+// instead of a screenshot file.
+const STEPS = [
+  {
+    text: "Tap the grey picture of gears called Settings.",
+    screen: "home",
+    gesture: { type: "tap", target: "app-settings" },
+    highlight: "app-settings",
+    alt: "Drawing of an iPhone home screen. The grey Settings app, a picture of gears, has an orange outline around it.",
+  },
+  {
+    text: "Scroll down slowly until you see Display & Brightness.",
+    screen: "settings",
+    gesture: { type: "swipe", reveal: "row-display" },
+    highlight: "row-display",
+    highlightAfter: true,
+    alt: "Drawing of the Settings list. A finger slides up the screen and the list moves until Display and Brightness shows, with an orange outline.",
+  },
+  {
+    text: "Tap Display & Brightness.",
+    screen: "settings",
+    setup: { reveal: "row-display" },
+    gesture: { type: "tap", target: "row-display" },
+    highlight: "row-display",
+    alt: "Drawing of the Settings list. The Display and Brightness row has an orange outline around it.",
+  },
+  {
+    text: "Tap Text Size.",
+    screen: "display",
+    gesture: { type: "tap", target: "row-textsize" },
+    highlight: "row-textsize",
+    alt: "Drawing of the Display and Brightness page. The Text Size row has an orange outline around it.",
+  },
+  {
+    text: "Drag the slider at the bottom to the right to make the words bigger.",
+    screen: "textsize",
+    setup: { size: 3 },
+    gesture: { type: "drag", from: 3, to: 5 },
+    highlight: "slider",
+    alt: "Drawing of the Text Size page. A finger drags the round button on the slider at the bottom to the right, and the words at the top get bigger.",
+  },
+  {
+    text: "Look at the sample words at the top and stop when they are easy to read.",
+    screen: "textsize",
+    setup: { size: 5 },
+    gesture: null,
+    highlight: "sample-text",
+    alt: "Drawing of the Text Size page with bigger words at the top. The words have an orange outline around them.",
+  },
+];
+
+// Reading sizes, smallest to largest, like the phone's seven slider stops.
+const SIZES = [14, 15, 16, 17, 19, 22, 25];
+const PHONE_W = 406, PHONE_H = 860;
+
+const $ = (id) => document.getElementById(id);
+const app = $("app"), stage = $("stage"), fit = $("fit"), phone = $("phone"), screenEl = $("screen");
+const hl = $("hl"), finger = $("finger"), ripple = $("ripple"), scroller = $("scroller");
+const thumb = $("thumb"), strack = $("strack"), sample = $("sample-text");
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+let scale = 1;
+let current = 0;
+let run = 0; // bumps on every step change so stale animations stop
+
+// ---------- Build repeated drawing parts ----------
+function gearSvg(cx, cy, r, teeth, fill, hole) {
+  let s = "";
+  for (let i = 0; i < teeth; i++) {
+    s += `<rect x="${cx - r * 0.2}" y="${cy - r * 1.32}" width="${r * 0.4}" height="${r * 0.5}" rx="${r * 0.08}" fill="${fill}" transform="rotate(${(i * 360) / teeth} ${cx} ${cy})"/>`;
+  }
+  return s + `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"/><circle cx="${cx}" cy="${cy}" r="${r * 0.42}" fill="${hole}"/>`;
+}
+
+document.getElementById("settings-icon").innerHTML =
+  `<defs><linearGradient id="gset" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c3c6cc"/><stop offset="1" stop-color="#8d929b"/></linearGradient></defs>` +
+  `<rect width="64" height="64" fill="url(#gset)"/>` + gearSvg(32, 32, 17, 12, "#4d525b", "#b3b7bf");
+
+const GLYPHS = {
+  plane: '<path d="M10 2l2 6 6 3v2l-6-1-1 4 2 2v1l-3-1-3 1v-1l2-2-1-4-6 1v-2l6-3z" fill="#fff"/>',
+  wifi: '<path d="M3 8a10 10 0 0 1 14 0M6 11a6 6 0 0 1 8 0" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="14.5" r="1.8" fill="#fff"/>',
+  bars: '<rect x="3" y="12" width="3" height="5" rx="1" fill="#fff"/><rect x="8.5" y="8" width="3" height="9" rx="1" fill="#fff"/><rect x="14" y="4" width="3" height="13" rx="1" fill="#fff"/>',
+  bell: '<path d="M10 3a5 5 0 0 0-5 5v4l-2 2h14l-2-2V8a5 5 0 0 0-5-5z" fill="#fff"/><circle cx="10" cy="16.5" r="1.8" fill="#fff"/>',
+  moon: '<path d="M13 3a7 7 0 1 0 4 11 6 6 0 0 1-4-11z" fill="#fff"/>',
+  person: '<circle cx="10" cy="5" r="2.5" fill="#fff"/><path d="M4 8h12M10 8v5l-3 5M10 13l3 5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>',
+  sun: '<circle cx="10" cy="10" r="3.6" fill="#fff"/>' +
+    [0, 45, 90, 135, 180, 225, 270, 315].map((a) => `<line x1="10" y1="2.2" x2="10" y2="4.4" stroke="#fff" stroke-width="2" stroke-linecap="round" transform="rotate(${a} 10 10)"/>`).join(""),
+  gear: gearSvg(10, 10, 5.5, 8, "#fff", "#8e8e93"),
+  dot: '<rect x="5" y="5" width="10" height="10" rx="3" fill="#fff" opacity=".9"/>',
+};
+
+document.querySelectorAll("[data-rows]").forEach((group) => {
+  group.innerHTML = group.dataset.rows.split("|").map((spec) => {
+    const [label, color, glyph, value, id] = spec.split(":");
+    const right = value === "switch" ? '<span class="switch"></span>' : `${value ? `<span class="value">${value}</span>` : ""}<span class="chev">›</span>`;
+    return `<div class="row"${id ? ` id="${id}"` : ""}><span class="ico" style="background:${color}"><svg viewBox="0 0 20 20">${GLYPHS[glyph]}</svg></span><span class="label">${label}</span>${right}</div>`;
+  }).join("");
+});
+
+document.querySelectorAll(".status-icons").forEach((el) => {
+  el.innerHTML = '<svg width="74" height="14" viewBox="0 0 74 14" fill="currentColor"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/><path d="M26 5a9 9 0 0 1 12 0l-1.5 1.6a7 7 0 0 0-9 0zM29 8.2a5 5 0 0 1 6 0L32 11.4z"/><rect x="46" y="1" width="24" height="12" rx="3.5" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="48" y="3" width="17" height="8" rx="2"/><rect x="71" y="5" width="2" height="4" rx="1" opacity=".5"/></svg>';
+});
+
+for (let i = 0; i < SIZES.length; i++) {
+  const t = document.createElement("div");
+  t.className = "tick";
+  t.style.left = (i / (SIZES.length - 1)) * 100 + "%";
+  strack.insertBefore(t, thumb);
+}
+
+// ---------- Fit the phone into whatever space the stage has ----------
+function layout() {
+  const r = stage.getBoundingClientRect();
+  const pad = 14;
+  scale = Math.max(0.2, Math.min((r.width - pad * 2) / PHONE_W, (r.height - pad * 2) / PHONE_H));
+  fit.style.width = PHONE_W * scale + "px";
+  fit.style.height = PHONE_H * scale + "px";
+  phone.style.transform = `scale(${scale})`;
+}
+new ResizeObserver(layout).observe(stage);
+layout();
+
+// Position of an element inside the unscaled phone screen. The outline and the
+// hand live in the same coordinates, so they stay lined up at any size.
+function box(el) {
+  const s = screenEl.getBoundingClientRect();
+  const r = el.getBoundingClientRect();
+  return { x: (r.left - s.left) / scale, y: (r.top - s.top) / scale, w: r.width / scale, h: r.height / scale };
+}
+const center = (el) => { const b = box(el); return { x: b.x + b.w / 2, y: b.y + b.h / 2 }; };
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+// ---------- Drawing state ----------
+function showScreen(name) {
+  document.querySelectorAll(".scr").forEach((s) => { s.hidden = s.dataset.screen !== name; });
+}
+function setScroll(px) { scroller.style.transform = px ? `translateY(${-px}px)` : ""; }
+function revealOffset(id) {
+  setScroll(0);
+  return Math.max(0, box($(id)).y - 400);
+}
+function setSize(i) {
+  sample.style.fontSize = SIZES[i] + "px";
+  thumb.style.left = (i / (SIZES.length - 1)) * 100 + "%";
+}
+function thumbPoint(i) {
+  const b = box(strack);
+  return { x: b.x + (b.w * i) / (SIZES.length - 1), y: b.y + b.h / 2 };
+}
+
+function showHighlight(id) {
+  if (!id) return;
+  const b = box($(id));
+  const p = 8;
+  const x = clamp(b.x - p, 4, 386), y = clamp(b.y - p, 4, 840);
+  const w = Math.min(b.w + p * 2, 386 - x), h = Math.min(b.h + p * 2, 840 - y);
+  Object.assign(hl.style, { left: x + "px", top: y + "px", width: w + "px", height: h + "px" });
+  hl.classList.add("show");
+  // A soft pulse that stops after a few seconds, then the outline stays put.
+  if (!reduceMotion.matches) {
+    hl.animate(
+      [{ boxShadow: "0 0 0 0 rgba(255,106,0,.6)" }, { boxShadow: "0 0 0 18px rgba(255,106,0,0)" }],
+      { duration: 1300, iterations: 3, easing: "ease-out" },
+    );
+  }
+}
+
+// ---------- Hand animations ----------
+const handAt = (p, s = 1, o = 1) => ({ transform: `translate(${p.x - 29}px, ${p.y - 29}px) scale(${s})`, opacity: o });
+
+async function go(el, frames, options, id) {
+  const a = el.animate(frames, { fill: "forwards", ...options });
+  try { await a.finished; } catch { /* cancelled */ }
+  return id === run;
+}
+const pause = (ms, id) => new Promise((r) => setTimeout(() => r(id === run), ms));
+
+function pulseRipple(p) {
+  ripple.animate(
+    [
+      { transform: `translate(${p.x - 29}px, ${p.y - 29}px) scale(.6)`, opacity: 0.9 },
+      { transform: `translate(${p.x - 29}px, ${p.y - 29}px) scale(2.3)`, opacity: 0 },
+    ],
+    { duration: 600, easing: "ease-out" },
+  );
+}
+
+async function tap(targetId, id) {
+  const c = center($(targetId));
+  const start = { x: clamp(c.x + 80, 40, 350), y: c.y + 150 < 800 ? c.y + 150 : c.y - 150 };
+  if (!(await go(finger, [handAt(start, 1, 0), handAt(start)], { duration: 250 }, id))) return;
+  if (!(await go(finger, [handAt(start), handAt(c)], { duration: 850, easing: "ease-in-out" }, id))) return;
+  pulseRipple(c);
+  if (!(await go(finger, [handAt(c), handAt(c, 0.82)], { duration: 140 }, id))) return;
+  if (!(await go(finger, [handAt(c, 0.82), handAt(c)], { duration: 160 }, id))) return;
+  if (!(await pause(350, id))) return;
+  await go(finger, [handAt(c), handAt({ x: c.x + 30, y: c.y + 70 }, 1, 0)], { duration: 500 }, id);
+}
+
+async function swipe(revealId, id) {
+  const total = revealOffset(revealId);
+  const half = total / 2;
+  for (let n = 0; n < 2; n++) {
+    const a = { x: 250, y: 640 }, b = { x: 250, y: 640 - half };
+    const from = half * n, to = half * (n + 1);
+    if (!(await go(finger, [handAt(a, 1, 0), handAt(a)], { duration: 220 }, id))) return;
+    const list = scroller.animate(
+      [{ transform: `translateY(${-from}px)` }, { transform: `translateY(${-to}px)` }],
+      { duration: 1000, easing: "cubic-bezier(.3,.1,.25,1)", fill: "forwards" },
+    );
+    if (!(await go(finger, [handAt(a), handAt(b)], { duration: 1000, easing: "cubic-bezier(.3,.1,.25,1)" }, id))) return;
+    setScroll(to);
+    list.cancel();
+    if (!(await go(finger, [handAt(b), handAt(b, 1, 0)], { duration: 250 }, id))) return;
+    if (!(await pause(250, id))) return;
+  }
+}
+
+async function drag(fromIdx, toIdx, id) {
+  const a = thumbPoint(fromIdx), b = thumbPoint(toIdx);
+  const start = { x: a.x, y: a.y + 90 };
+  if (!(await go(finger, [handAt(start, 1, 0), handAt(start)], { duration: 250 }, id))) return;
+  if (!(await go(finger, [handAt(start), handAt(a)], { duration: 700, easing: "ease-in-out" }, id))) return;
+  if (!(await go(finger, [handAt(a), handAt(a, 0.82)], { duration: 140 }, id))) return;
+  const span = 1400;
+  const fromPct = (fromIdx / (SIZES.length - 1)) * 100, toPct = (toIdx / (SIZES.length - 1)) * 100;
+  const knob = thumb.animate([{ left: fromPct + "%" }, { left: toPct + "%" }], { duration: span, easing: "linear", fill: "forwards" });
+  for (let k = fromIdx + 1; k <= toIdx; k++) {
+    // Grow the sample words as the round button passes each stop.
+    setTimeout(() => { if (id === run) sample.style.fontSize = SIZES[k] + "px"; }, (span * (k - fromIdx)) / (toIdx - fromIdx) - 60);
+  }
+  if (!(await go(finger, [handAt(a, 0.82), handAt(b, 0.82)], { duration: span, easing: "linear" }, id))) return;
+  setSize(toIdx);
+  knob.cancel();
+  if (!(await go(finger, [handAt(b, 0.82), handAt(b)], { duration: 160 }, id))) return;
+  if (!(await pause(300, id))) return;
+  await go(finger, [handAt(b), handAt({ x: b.x + 20, y: b.y + 80 }, 1, 0)], { duration: 500 }, id);
+}
+
+function stopAll() {
+  run++;
+  [finger, ripple, hl, scroller, thumb].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
+  finger.style.opacity = "0";
+  hl.classList.remove("show");
+}
+
+function applyEndState(step) {
+  const g = step.gesture;
+  if (g?.type === "swipe") setScroll(revealOffset(g.reveal));
+  if (g?.type === "drag") setSize(g.to);
+}
+
+// ---------- Steps ----------
+async function render(i) {
+  stopAll();
+  const id = run;
+  const step = STEPS[i];
+  current = i;
+
+  showScreen(step.screen);
+  setScroll(0);
+  setSize(step.setup?.size ?? 3);
+
+  $("words").textContent = step.text;
+  $("count").textContent = `Step ${i + 1} of ${STEPS.length}`;
+  $("progress").style.width = ((i + 1) / STEPS.length) * 100 + "%";
+  $("back").disabled = i === 0;
+  $("next").innerHTML = i === STEPS.length - 1 ? 'Finish <span aria-hidden="true">→</span>' : 'Next <span aria-hidden="true">→</span>';
+  stage.setAttribute("aria-label", step.alt);
+  $("live").textContent = `Step ${i + 1} of ${STEPS.length}. ${step.text}`;
+
+  // Let the new screen lay out before measuring it.
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  if (id !== run) return;
+  if (step.setup?.reveal) setScroll(revealOffset(step.setup.reveal));
+
+  if (reduceMotion.matches || !step.gesture) {
+    applyEndState(step);
+    showHighlight(step.highlight);
+    return;
+  }
+
+  if (!step.highlightAfter) showHighlight(step.highlight);
+  if (!(await pause(600, id))) return;
+
+  const g = step.gesture;
+  if (g.type === "tap") await tap(g.target, id);
+  if (g.type === "swipe") await swipe(g.reveal, id);
+  if (g.type === "drag") await drag(g.from, g.to, id);
+
+  if (id === run && step.highlightAfter) showHighlight(step.highlight);
+}
+
+function showDone() {
+  stopAll();
+  app.classList.add("is-done");
+  $("done").hidden = false;
+  $("answers").hidden = false;
+  $("after-yes").hidden = true;
+  $("after-no").hidden = true;
+  $("asked").hidden = true;
+  $("count").textContent = "All steps done";
+  $("progress").style.width = "100%";
+  $("live").textContent = "All steps done. Did this solve it?";
+  $("done-q").focus();
+}
+
+function backToSteps(i) {
+  app.classList.remove("is-done");
+  $("done").hidden = true;
+  render(i);
+  $("next").focus();
+}
+
+$("next").addEventListener("click", () => (current < STEPS.length - 1 ? render(current + 1) : showDone()));
+$("back").addEventListener("click", () => { if (current > 0) render(current - 1); });
+$("replay").addEventListener("click", () => render(current));
+$("again").addEventListener("click", () => backToSteps(STEPS.length - 1));
+$("restart").addEventListener("click", () => backToSteps(0));
+$("yes").addEventListener("click", () => { $("answers").hidden = true; $("after-yes").hidden = false; });
+$("no").addEventListener("click", () => { $("answers").hidden = true; $("after-no").hidden = false; $("ask").focus(); });
+$("ask").addEventListener("click", () => { $("asked").hidden = false; });
+
+document.addEventListener("keydown", (e) => {
+  if (app.classList.contains("is-done") || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (e.key === "ArrowRight") $("next").click();
+  if (e.key === "ArrowLeft") $("back").click();
+});
+
+// Read aloud with the browser's own voice, where it has one.
+const speakBtn = $("speak");
+if (!("speechSynthesis" in window)) {
+  speakBtn.hidden = true;
+} else {
+  speakBtn.addEventListener("click", () => {
+    try {
+      const text = app.classList.contains("is-done") ? "Did this solve it?" : `Step ${current + 1} of ${STEPS.length}. ${STEPS[current].text}`;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 0.9;
+      window.speechSynthesis.speak(u);
+    } catch { speakBtn.hidden = true; }
+  });
+}
+
+render(0);
+</script>
