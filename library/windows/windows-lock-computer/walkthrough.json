@@ -22,26 +22,34 @@
     {
       "order": 1,
       "text": "Click the Start button: the four blue squares at the bottom of your screen.",
-      "image": "step-01.placeholder.png",
-      "highlight": { "type": "box", "x": 35, "y": 93, "w": 4, "h": 7 }
+      "alt": "Drawing of a Windows screen. The Start button, four blue squares in the bar at the bottom, has an orange outline.",
+      "scene": { "screen": "windows/desktop" },
+      "gesture": { "type": "click", "target": "start-button" },
+      "highlight": "start-button"
     },
     {
       "order": 2,
       "text": "Click your name or picture at the bottom left of the menu.",
-      "image": "step-02.placeholder.png",
-      "highlight": { "type": "box", "x": 30, "y": 80, "w": 18, "h": 8 }
+      "alt": "Drawing of the open Start menu. Your name and picture at its bottom left have an orange outline.",
+      "scene": { "screen": "windows/desktop", "start": { "view": "pinned" } },
+      "gesture": { "type": "click", "target": "start-account" },
+      "highlight": "start-account"
     },
     {
       "order": 3,
       "text": "Click Lock.",
-      "image": "step-03.placeholder.png",
-      "highlight": { "type": "arrow", "x": 38, "y": 62, "direction": "left" }
+      "alt": "Drawing of a small menu above your name in the Start menu. The word Lock has an orange outline.",
+      "scene": { "screen": "windows/desktop", "start": { "view": "pinned", "account_menu": true } },
+      "gesture": { "type": "click", "target": "account-lock" },
+      "highlight": "account-lock"
     },
     {
       "order": 4,
       "text": "Check that your screen now shows the time and a picture.",
-      "image": "step-04.placeholder.png",
-      "highlight": null
+      "alt": "Drawing of the Windows lock screen: a picture with the time and date in large letters, which have an orange outline.",
+      "scene": { "screen": "windows/lock" },
+      "gesture": null,
+      "highlight": "lock-clock"
     }
   ]
 }

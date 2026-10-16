@@ -86,12 +86,22 @@ model Step {
   organizationId     String? @map("organization_id")
   order              Int
   text               String
-  // Storage key for the screenshot (local disk or S3 bucket).
-  imageKey           String  @map("image_key")
+  // Describes the picture for screen reader users.
+  alt                String?
+
+  // A step is either a drawn scene or a screenshot.
+  // Drawn scene (see src/scenes/format.ts): what to draw, what the hand or
+  // mouse does, and which drawn element gets the outline.
+  scene              Json?
+  gesture            Json?
+  highlightTarget    String? @map("highlight_target")
+
+  // Screenshot: storage key for the image (local disk or S3 bucket).
+  imageKey           String? @map("image_key")
   // True while the step still shows a "Screenshot needed" placeholder.
   imageIsPlaceholder Boolean @default(false) @map("image_is_placeholder")
 
-  // Highlight coordinates are percentages (0-100) of the image's width and
+  // Screenshot highlight coordinates are percentages (0-100) of the image's width and
   // height so they scale with the screenshot. A box uses x, y, w, h. An arrow
   // points at (x, y) from the given direction; w and h are unused.
   highlightType      HighlightType?  @map("highlight_type")

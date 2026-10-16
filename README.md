@@ -4,7 +4,11 @@ Step-by-step visual walkthroughs for common iPhone and Windows tasks, for staff 
 social service organizations. Answers come from a curated, human-verified library;
 AI only matches a question to a walkthrough. (Product name is a placeholder.)
 
-The build brief is the source of truth for scope. Current status: **Phase 1 (Foundation)**.
+Each step shows a simplified, animated drawing of the screen: a finger or mouse
+pointer shows what to do, and an orange outline marks what to touch. Nothing is
+drawn or written by AI at runtime.
+
+Current status: **Phase 2 (walkthrough player) done.** See `CLAUDE.md` for details.
 
 ## Run it with Docker
 
@@ -15,7 +19,10 @@ docker compose up --build
 
 This starts Postgres, runs migrations and loads `/library` into the database
 (`migrate` service, exits when done), then starts the app on http://localhost:3000.
-Health check: http://localhost:3000/api/health
+Health check: http://localhost:3000/api/health. Walkthroughs open at `/w/<slug>`.
+
+Draft walkthroughs only show when `SHOW_DRAFTS=true` (the example `.env` sets it for
+local review). Never set it in a real deployment.
 
 ## Run it for development
 
@@ -34,25 +41,25 @@ npm run dev
 | `npm run db:migrate` | Apply database migrations |
 | `npm run db:seed` | Load `/library` into the database (safe to re-run) |
 | `npm run library:lint` | Check walkthrough files against the format and writing rules |
-| `npm run library:placeholders` | Create "Screenshot needed" images for missing placeholders |
+| `npm run library:placeholders` | Create "Screenshot needed" images for screenshot steps |
 | `npm run typecheck` / `npm run lint` | TypeScript and ESLint |
+| `npm run test:e2e` | Play every walkthrough at phone and laptop sizes, check outline alignment and accessibility (axe). Needs the database up and seeded; run `npx playwright install chromium` once first. |
 
 ## The walkthrough library
 
-Each walkthrough is a folder: `library/<device>/<slug>/walkthrough.json` plus its
-screenshots. The format is defined in `src/lib/walkthrough-format.ts`.
+Each walkthrough is a folder: `library/<device>/<slug>/walkthrough.json`. The format
+is defined in `src/lib/walkthrough-format.ts` and `src/scenes/format.ts`.
 
 - `slug` must match the folder name, and `device` must match the parent folder.
 - Steps are numbered 1, 2, 3… in order.
-- `highlight` is `null`, a box `{ "type": "box", "x", "y", "w", "h" }`, or an arrow
-  `{ "type": "arrow", "x", "y", "direction": "up" | "down" | "left" | "right" }`.
-  All coordinates are percentages (0–100) of the image's width and height.
+- A drawn step has `text`, `alt` (describes the picture), `scene` (which screen to
+  draw and what's on it), `gesture` (what the finger or mouse does) and `highlight`
+  (which drawn element gets the orange outline). See the samples for examples.
+- A screenshot step (for an organization's own apps) has `image` and a percentage-based
+  `highlight` instead. Placeholder screenshots are named `step-NN.placeholder.png`.
 - `bonus_tip` holds keyboard shortcuts and other extras. They never go in the main steps.
-- Placeholder screenshots are named `step-NN.placeholder.png`. They are grey cards
-  that say "SCREENSHOT NEEDED" and mark the guessed highlight area with a dashed
-  outline. They are never drawings of a device screen.
-- A walkthrough can only be `published` when every screenshot is real and a human
-  has filled in `verified_by` and `verified_on`. The seed refuses to load it otherwise.
+- A walkthrough can only be `published` once a human has checked it on a real device
+  and filled in `verified_by` and `verified_on`. The seed refuses to load it otherwise.
 
 ### Step writing rules
 

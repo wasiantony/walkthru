@@ -1,7 +1,7 @@
 // Reads and validates walkthrough folders from /library/<device>/<slug>/.
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import { DEVICES, walkthroughSchema, type WalkthroughFile } from "./walkthrough-format";
+import { DEVICES, isSceneStep, walkthroughSchema, type WalkthroughFile } from "./walkthrough-format";
 
 export type LibraryEntry = {
   dir: string;
@@ -60,9 +60,11 @@ export function readLibrary(
         continue;
       }
 
-      const missing = checkImages ? walkthrough.steps.filter((s) => !existsSync(path.join(dir, s.image))) : [];
+      const missing = checkImages
+        ? walkthrough.steps.flatMap((s) => (!isSceneStep(s) && !existsSync(path.join(dir, s.image)) ? [s.image] : []))
+        : [];
       if (missing.length > 0) {
-        problems.push({ dir, message: `Missing image files: ${missing.map((s) => s.image).join(", ")}` });
+        problems.push({ dir, message: `Missing image files: ${missing.join(", ")}` });
         continue;
       }
 

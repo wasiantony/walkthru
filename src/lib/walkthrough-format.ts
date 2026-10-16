@@ -1,6 +1,7 @@
 // The walkthrough.json format used by /library/<device>/<slug>/.
 // Shared by the seed script, the lint script, and (later) the admin importer.
 import { z } from "zod";
+import { gestureSchema, sceneDevice, sceneSchema } from "../scenes/format";
 
 export const DEVICES = ["iphone", "windows"] as const;
 export type Device = (typeof DEVICES)[number];
@@ -35,12 +36,32 @@ const arrowHighlight = z.object({
 
 export const highlightSchema = z.union([boxHighlight, arrowHighlight]);
 
-export const stepSchema = z.object({
+// A step shows either a drawn scene (the default for the shared library) or a
+// screenshot (for an organization's own apps, which have no drawings).
+export const sceneStepSchema = z.object({
   order: z.number().int().positive(),
   text: z.string().trim().min(1),
+  // Describes the picture for people who can't see it.
+  alt: z.string().trim().min(1),
+  scene: sceneSchema,
+  gesture: gestureSchema.nullable().default(null),
+  // data-target name of the element that gets the orange outline.
+  highlight: z.string().nullable().default(null),
+});
+
+export const imageStepSchema = z.object({
+  order: z.number().int().positive(),
+  text: z.string().trim().min(1),
+  alt: z.string().trim().min(1).optional(),
   image: z.string().regex(IMAGE_FILE_PATTERN, "Image must be a .png, .jpg or .webp file name with no folders."),
   highlight: highlightSchema.nullable().default(null),
 });
+
+export const stepSchema = z.union([sceneStepSchema, imageStepSchema]);
+
+export function isSceneStep(step: StepFile): step is SceneStepFile {
+  return "scene" in step;
+}
 
 export const walkthroughSchema = z
   .object({
@@ -67,6 +88,13 @@ export const walkthroughSchema = z
           message: `Steps must be numbered 1, 2, 3... in order. Expected ${i + 1}, found ${step.order}.`,
         });
       }
+      if (isSceneStep(step) && sceneDevice(step.scene) !== w.device) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["steps", i, "scene", "screen"],
+          message: `A ${w.device} walkthrough can't use the "${step.scene.screen}" screen.`,
+        });
+      }
     });
 
     if (w.status === "published") {
@@ -78,7 +106,7 @@ export const walkthroughSchema = z
         });
       }
       w.steps.forEach((step, i) => {
-        if (PLACEHOLDER_IMAGE_PATTERN.test(step.image)) {
+        if (!isSceneStep(step) && PLACEHOLDER_IMAGE_PATTERN.test(step.image)) {
           ctx.addIssue({
             code: "custom",
             path: ["steps", i, "image"],
@@ -91,4 +119,6 @@ export const walkthroughSchema = z
 
 export type WalkthroughFile = z.infer<typeof walkthroughSchema>;
 export type StepFile = z.infer<typeof stepSchema>;
+export type SceneStepFile = z.infer<typeof sceneStepSchema>;
+export type ImageStepFile = z.infer<typeof imageStepSchema>;
 export type Highlight = z.infer<typeof highlightSchema>;

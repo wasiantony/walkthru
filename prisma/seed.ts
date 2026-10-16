@@ -9,10 +9,10 @@ import "dotenv/config";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { Prisma, PrismaClient } from "../src/generated/prisma/client";
 import { readLibrary } from "../src/lib/library";
 import { contentTypeFor, getStorage } from "../src/lib/storage";
-import { PLACEHOLDER_IMAGE_PATTERN } from "../src/lib/walkthrough-format";
+import { isSceneStep, PLACEHOLDER_IMAGE_PATTERN } from "../src/lib/walkthrough-format";
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
 const storage = getStorage();
@@ -31,6 +31,7 @@ async function main() {
     // Copy screenshots into storage first so steps never point at missing images.
     const imageKeys = new Map<string, string>();
     for (const step of wt.steps) {
+      if (isSceneStep(step)) continue;
       const key = `library/${wt.device}/${wt.slug}/${step.image}`;
       await storage.put(key, await readFile(path.join(dir, step.image)), contentTypeFor(step.image));
       imageKeys.set(step.image, key);
@@ -60,20 +61,28 @@ async function main() {
 
       await tx.step.deleteMany({ where: { walkthroughId: saved.id } });
       await tx.step.createMany({
-        data: wt.steps.map((s) => ({
-          walkthroughId: saved.id,
-          organizationId: null,
-          order: s.order,
-          text: s.text,
-          imageKey: imageKeys.get(s.image)!,
-          imageIsPlaceholder: PLACEHOLDER_IMAGE_PATTERN.test(s.image),
-          highlightType: s.highlight?.type ?? null,
-          highlightX: s.highlight?.x ?? null,
-          highlightY: s.highlight?.y ?? null,
-          highlightW: s.highlight?.type === "box" ? s.highlight.w : null,
-          highlightH: s.highlight?.type === "box" ? s.highlight.h : null,
-          highlightDirection: s.highlight?.type === "arrow" ? s.highlight.direction : null,
-        })),
+        data: wt.steps.map((s) => {
+          const base = { walkthroughId: saved.id, organizationId: null, order: s.order, text: s.text, alt: s.alt ?? null };
+          if (isSceneStep(s)) {
+            return {
+              ...base,
+              scene: s.scene,
+              gesture: s.gesture ?? Prisma.DbNull,
+              highlightTarget: s.highlight,
+            };
+          }
+          return {
+            ...base,
+            imageKey: imageKeys.get(s.image)!,
+            imageIsPlaceholder: PLACEHOLDER_IMAGE_PATTERN.test(s.image),
+            highlightType: s.highlight?.type ?? null,
+            highlightX: s.highlight?.x ?? null,
+            highlightY: s.highlight?.y ?? null,
+            highlightW: s.highlight?.type === "box" ? s.highlight.w : null,
+            highlightH: s.highlight?.type === "box" ? s.highlight.h : null,
+            highlightDirection: s.highlight?.type === "arrow" ? s.highlight.direction : null,
+          };
+        }),
       });
     });
 

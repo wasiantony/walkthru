@@ -22,38 +22,151 @@
     {
       "order": 1,
       "text": "Tap the grey picture of gears called Settings.",
-      "image": "step-01.placeholder.png",
-      "highlight": { "type": "box", "x": 6, "y": 38, "w": 20, "h": 10 }
+      "alt": "Drawing of an iPhone home screen. The grey Settings app, a picture of gears, has an orange outline around it.",
+      "scene": { "screen": "iphone/home" },
+      "gesture": { "type": "tap", "target": "app-settings" },
+      "highlight": "app-settings"
     },
     {
       "order": 2,
       "text": "Scroll down slowly until you see Display & Brightness.",
-      "image": "step-02.placeholder.png",
-      "highlight": null
+      "alt": "Drawing of the Settings list. A finger slides up the screen and the list moves until Display & Brightness shows, with an orange outline.",
+      "scene": {
+        "screen": "iphone/list",
+        "title": "Settings",
+        "large": true,
+        "search": true,
+        "groups": [
+          { "rows": [{ "label": "Your Name", "sub": "Account, iCloud and more", "avatar": "YN" }] },
+          {
+            "rows": [
+              { "label": "Airplane Mode", "icon": { "color": "#ff9500", "glyph": "plane" }, "accessory": "switch-off" },
+              { "label": "Wi-Fi", "icon": { "color": "#0a7aff", "glyph": "wifi" }, "value": "Office" },
+              { "label": "Bluetooth", "icon": { "color": "#0a7aff", "glyph": "dot" }, "value": "On" },
+              { "label": "Mobile Service", "icon": { "color": "#34c759", "glyph": "bars" } }
+            ]
+          },
+          {
+            "rows": [
+              { "label": "Notifications", "icon": { "color": "#ff3b30", "glyph": "bell" } },
+              { "label": "Sounds & Haptics", "icon": { "color": "#ff2d55", "glyph": "dot" } },
+              { "label": "Focus", "icon": { "color": "#5856d6", "glyph": "moon" } },
+              { "label": "Screen Time", "icon": { "color": "#5856d6", "glyph": "dot" } }
+            ]
+          },
+          {
+            "rows": [
+              { "label": "General", "icon": { "color": "#8e8e93", "glyph": "gear" } },
+              { "label": "Accessibility", "icon": { "color": "#0a7aff", "glyph": "person" } },
+              { "label": "Camera", "icon": { "color": "#8e8e93", "glyph": "dot" } },
+              { "label": "Control Centre", "icon": { "color": "#8e8e93", "glyph": "dot" } },
+              { "id": "row-display", "label": "Display & Brightness", "icon": { "color": "#0a7aff", "glyph": "sun" } },
+              { "label": "Home Screen & App Library", "icon": { "color": "#5856d6", "glyph": "dot" } },
+              { "label": "Search", "icon": { "color": "#8e8e93", "glyph": "dot" } },
+              { "label": "Wallpaper", "icon": { "color": "#32ade6", "glyph": "dot" } }
+            ]
+          }
+        ]
+      },
+      "gesture": { "type": "scroll", "reveal": "row-display" },
+      "highlight": "row-display"
     },
     {
       "order": 3,
       "text": "Tap Display & Brightness.",
-      "image": "step-03.placeholder.png",
-      "highlight": { "type": "box", "x": 4, "y": 46, "w": 92, "h": 6 }
+      "alt": "Drawing of the Settings list. The Display & Brightness row has an orange outline around it.",
+      "scene": {
+        "screen": "iphone/list",
+        "title": "Settings",
+        "large": true,
+        "search": true,
+        "scroll_to": "row-display",
+        "groups": [
+          { "rows": [{ "label": "Your Name", "sub": "Account, iCloud and more", "avatar": "YN" }] },
+          {
+            "rows": [
+              { "label": "Airplane Mode", "icon": { "color": "#ff9500", "glyph": "plane" }, "accessory": "switch-off" },
+              { "label": "Wi-Fi", "icon": { "color": "#0a7aff", "glyph": "wifi" }, "value": "Office" },
+              { "label": "Bluetooth", "icon": { "color": "#0a7aff", "glyph": "dot" }, "value": "On" },
+              { "label": "Mobile Service", "icon": { "color": "#34c759", "glyph": "bars" } }
+            ]
+          },
+          {
+            "rows": [
+              { "label": "Notifications", "icon": { "color": "#ff3b30", "glyph": "bell" } },
+              { "label": "Sounds & Haptics", "icon": { "color": "#ff2d55", "glyph": "dot" } },
+              { "label": "Focus", "icon": { "color": "#5856d6", "glyph": "moon" } },
+              { "label": "Screen Time", "icon": { "color": "#5856d6", "glyph": "dot" } }
+            ]
+          },
+          {
+            "rows": [
+              { "label": "General", "icon": { "color": "#8e8e93", "glyph": "gear" } },
+              { "label": "Accessibility", "icon": { "color": "#0a7aff", "glyph": "person" } },
+              { "label": "Camera", "icon": { "color": "#8e8e93", "glyph": "dot" } },
+              { "label": "Control Centre", "icon": { "color": "#8e8e93", "glyph": "dot" } },
+              { "id": "row-display", "label": "Display & Brightness", "icon": { "color": "#0a7aff", "glyph": "sun" } },
+              { "label": "Home Screen & App Library", "icon": { "color": "#5856d6", "glyph": "dot" } },
+              { "label": "Search", "icon": { "color": "#8e8e93", "glyph": "dot" } },
+              { "label": "Wallpaper", "icon": { "color": "#32ade6", "glyph": "dot" } }
+            ]
+          }
+        ]
+      },
+      "gesture": { "type": "tap", "target": "row-display" },
+      "highlight": "row-display"
     },
     {
       "order": 4,
       "text": "Tap Text Size.",
-      "image": "step-04.placeholder.png",
-      "highlight": { "type": "box", "x": 4, "y": 58, "w": 92, "h": 6 }
+      "alt": "Drawing of the Display & Brightness page. The Text Size row has an orange outline around it.",
+      "scene": {
+        "screen": "iphone/list",
+        "title": "Display & Brightness",
+        "back": "Settings",
+        "groups": [
+          { "kind": "appearance", "header": "Appearance" },
+          {
+            "rows": [
+              { "id": "row-text-size", "label": "Text Size" },
+              { "label": "Bold Text", "accessory": "switch-off" }
+            ]
+          },
+          { "kind": "brightness", "header": "Brightness" },
+          {
+            "rows": [
+              { "label": "Night Shift", "value": "Off" },
+              { "label": "Auto-Lock", "value": "30 seconds" }
+            ]
+          }
+        ]
+      },
+      "gesture": { "type": "tap", "target": "row-text-size" },
+      "highlight": "row-text-size"
     },
     {
       "order": 5,
       "text": "Drag the slider at the bottom to the right to make the words bigger.",
-      "image": "step-05.placeholder.png",
-      "highlight": { "type": "box", "x": 6, "y": 82, "w": 88, "h": 8 }
+      "alt": "Drawing of the Text Size page. A finger drags the round button on the slider at the bottom to the right, and the words at the top get bigger.",
+      "scene": {
+        "screen": "iphone/text-size",
+        "sample": "Apps that support this setting will change to the reading size you choose below.",
+        "value": 3
+      },
+      "gesture": { "type": "slide", "to": 5 },
+      "highlight": "text-size-slider"
     },
     {
       "order": 6,
       "text": "Look at the sample words at the top and stop when they are easy to read.",
-      "image": "step-06.placeholder.png",
-      "highlight": { "type": "box", "x": 6, "y": 14, "w": 88, "h": 22 }
+      "alt": "Drawing of the Text Size page with bigger words at the top. The words have an orange outline around them.",
+      "scene": {
+        "screen": "iphone/text-size",
+        "sample": "Apps that support this setting will change to the reading size you choose below.",
+        "value": 5
+      },
+      "gesture": null,
+      "highlight": "text-size-sample"
     }
   ]
 }

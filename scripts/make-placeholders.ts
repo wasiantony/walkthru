@@ -10,7 +10,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { readLibrary } from "../src/lib/library";
-import { PLACEHOLDER_IMAGE_PATTERN, type Device, type Highlight } from "../src/lib/walkthrough-format";
+import { isSceneStep, PLACEHOLDER_IMAGE_PATTERN, type Device, type Highlight } from "../src/lib/walkthrough-format";
 
 const SIZES: Record<Device, { w: number; h: number; wrap: number }> = {
   // Portrait phone and 16:9 laptop proportions.
@@ -92,7 +92,7 @@ async function main() {
   let made = 0;
   for (const { dir, walkthrough: wt } of entries) {
     for (const step of wt.steps) {
-      if (!PLACEHOLDER_IMAGE_PATTERN.test(step.image)) continue;
+      if (isSceneStep(step) || !PLACEHOLDER_IMAGE_PATTERN.test(step.image)) continue;
       const file = path.join(dir, step.image);
       if (existsSync(file) && !force) continue;
       const svg = placeholderSvg(wt.device, wt.title, step.order, wt.steps.length, step.text, step.highlight);

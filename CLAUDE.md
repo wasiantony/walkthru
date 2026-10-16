@@ -43,30 +43,51 @@ Build phases (finish each, check its acceptance criteria, report before the next
 6. Pilot hardening — multi-org isolation, access codes, rate limits, personal-info
    stripping, error pages, backups that restore.
 
-## Where things stand (Oct 13, 2026)
+## Where things stand (Oct 15, 2026)
 
-**Phase 1 is done and verified.** `docker compose up --build` starts Postgres, runs
-migrations and the library seed (one-shot `migrate` service), and serves the app on
-:3000 with a healthy `/api/health`. The home page is a temporary list of seeded
-walkthroughs; Phase 3 replaces it.
+**Phase 1 is done.** `docker compose up --build` starts Postgres, runs migrations and
+the library seed (one-shot `migrate` service), and serves the app on :3000 with a
+healthy `/api/health`. The home page is a temporary list of walkthroughs; Phase 3
+replaces it.
 
-**Open decision: screenshots vs. animated drawings.** The brief requires real
-screenshots and forbids drawn device screens. The owner doesn't want to capture and
-upload screenshots and asked about animated tutorials instead. A prototype is in
-`prototypes/animated-walkthrough.html` (published privately at
-https://claude.ai/artifact/JRCnNJk9RPA7hm61VAP88E): "Make the text on my phone
-bigger" with drawn iPhone screens, an animated finger (tap, swipe, drag), and an
-orange outline on the target. Each step is data: `{ text, screen, gesture, highlight }`.
+**Phase 2 is done.** The player is at `/w/<slug>`. `npm run test:e2e` (11 tests) passes
+against both a production build and the Docker container: all 3 samples play at 375px
+and 1366px, outlines stay on target after resizing, axe finds no WCAG 2.2 AA
+violations, animations finish in the right end state with no console errors.
 
-- If the owner approves: the step format changes from `image` + coordinates to a
-  drawn `screen` + `gesture` + `highlight` (element id). Phase 2 becomes a scene
-  renderer built from reusable screen parts; Phase 4's editor edits scenes; a human
-  still checks each walkthrough against a real device before publishing. Keep
-  optional screenshot upload for org-private apps (e.g. case management software).
-  This reverses two rules in the brief, so confirm before building.
-- If not: Phase 2 proceeds as written with screenshots + percentage highlights.
+**Decided Oct 15: animated drawings instead of screenshots.** The owner chose this
+over the brief's screenshot approach (which reverses two brief rules: "real screenshots
+before publishing" and "never draw device screens"). What still holds: a human checks
+every walkthrough on a real device and fills in `verified_by` / `verified_on` before
+it can be published; AI never draws or writes anything at runtime. Screenshot steps
+remain in the format for org-private apps (e.g. case management software) that have
+no drawings, but the player doesn't render them yet (Phase 4, with uploads).
 
-**Do not start Phase 2 until this is decided.**
+### How drawn steps work
+- A step is `{ text, alt, scene, gesture, highlight }` (`src/scenes/format.ts`).
+  `scene.screen` picks a screen from the kit: `iphone/home`, `iphone/list`,
+  `iphone/text-size`, `windows/desktop` (with optional Start menu, search, windows,
+  snip overlay, right-click menu, mouse picture, notification), `windows/lock`.
+- `gesture` is tap / click / right-click / scroll / slide / type / drag-box.
+  `highlight` and gesture targets name a `data-target` the kit draws.
+- Kit: `src/scenes/kit/*.tsx` + `scenes.css`, drawn at a fixed design size
+  (iPhone 390x844, Windows 1280x720) and scaled as one picture. `runner.ts` plays the
+  gesture and places the outline in design coordinates, so it stays aligned at any size.
+  `SceneView.tsx` fits the picture and zooms in on the step's area when the whole
+  screen would be too small to read (phones), except for scroll/slide steps.
+- New walkthroughs mostly reuse existing screens; a new kind of screen means adding a
+  schema in `format.ts`, a component in the kit, and a case in `Scene.tsx`.
+- Drawings are simplified and generic (no copied icons). Text in drawings keeps 4.5:1
+  contrast. Each step needs `alt` text describing the picture.
+
+### Not built yet (by design, later phases)
+- "Ask someone for help" shows a not-set-up message; sending to the org's admin comes
+  with orgs and admin (Phases 4 and 6). "Did this solve it?" isn't logged yet (Phase 3).
+- Drafts show only when `SHOW_DRAFTS=true` (set in `.env` for local review). Player
+  shows a "Draft: not checked on a real device" notice on drafts.
+
+**Next: Phase 3 (search and matching).** Before starting, read the memo's AI matching
+section (summarized above) and load the `claude-api` skill for current model IDs.
 
 ## Decisions already made
 
@@ -74,9 +95,10 @@ orange outline on the target. Each step is data: `{ text, screen, gesture, highl
   own JSON example broke this rule; its Windows section wins).
 - Arrow highlights are a point + direction (up/down/left/right). Boxes are x/y/w/h,
   all as percentages of the image.
-- Placeholder images are named `*.placeholder.png` and are grey "SCREENSHOT NEEDED"
-  cards, never drawings of a device. The seed refuses to load a `published`
-  walkthrough with placeholders or without `verified_by` / `verified_on`.
+- For screenshot steps only: placeholder images are named `*.placeholder.png` (grey
+  "SCREENSHOT NEEDED" cards). The seed refuses to load a `published` walkthrough with
+  placeholders or without `verified_by` / `verified_on`.
+- A database check makes every step have exactly one picture: a scene or an image.
 - Global library walkthroughs have `organization_id = null`; a partial unique index
   keeps their slugs unique. Orgs hide globals via `hidden_walkthroughs`.
 - Seed never deletes walkthroughs that disappear from `/library`; it warns.
@@ -109,4 +131,6 @@ docker compose up --build
 Then open http://localhost:3000. For hot-reload development instead:
 `docker compose up -d db`, `npm run db:migrate`, `npm run db:seed`, `npm run dev`.
 
-Checks: `npm run typecheck`, `npm run lint`, `npm run library:lint`, `npm run build`.
+Checks: `npm run typecheck`, `npm run lint`, `npm run library:lint`, `npm run build`,
+and `npm run test:e2e` (needs the database up and seeded; first run
+`npx playwright install chromium`). The e2e tests build and start the app on :3100.

@@ -22,56 +22,131 @@
     {
       "order": 1,
       "text": "Click the Start button: the four blue squares at the bottom of your screen.",
-      "image": "step-01.placeholder.png",
-      "highlight": { "type": "box", "x": 35, "y": 93, "w": 4, "h": 7 }
+      "alt": "Drawing of a Windows screen with an email open. The Start button, four blue squares in the bar at the bottom, has an orange outline.",
+      "scene": {
+        "screen": "windows/desktop",
+        "windows": [{ "app": "mail", "subject": "Picture of the problem", "body": "Hi, this is what I see on my screen:" }]
+      },
+      "gesture": { "type": "click", "target": "start-button" },
+      "highlight": "start-button"
     },
     {
       "order": 2,
       "text": "Type the words Snipping Tool.",
-      "image": "step-02.placeholder.png",
-      "highlight": { "type": "box", "x": 30, "y": 16, "w": 40, "h": 7 }
+      "alt": "Drawing of the Start menu. The words Snipping Tool appear in the search box at the top, which has an orange outline.",
+      "scene": {
+        "screen": "windows/desktop",
+        "windows": [{ "app": "mail", "subject": "Picture of the problem", "body": "Hi, this is what I see on my screen:" }],
+        "start": { "view": "search", "query": "Snipping Tool" }
+      },
+      "gesture": { "type": "type", "target": "start-search" },
+      "highlight": "start-search"
     },
     {
       "order": 3,
       "text": "Click Snipping Tool at the top of the list.",
-      "image": "step-03.placeholder.png",
-      "highlight": { "type": "box", "x": 30, "y": 28, "w": 22, "h": 14 }
+      "alt": "Drawing of the Start menu search results. Snipping Tool, at the top of the list, has an orange outline.",
+      "scene": {
+        "screen": "windows/desktop",
+        "windows": [{ "app": "mail", "subject": "Picture of the problem", "body": "Hi, this is what I see on my screen:" }],
+        "start": { "view": "search", "query": "Snipping Tool" }
+      },
+      "gesture": { "type": "click", "target": "result-snipping-tool" },
+      "highlight": "result-snipping-tool"
     },
     {
       "order": 4,
       "text": "Click the New button near the top left of the Snipping Tool window.",
-      "image": "step-04.placeholder.png",
-      "highlight": { "type": "box", "x": 4, "y": 6, "w": 9, "h": 7 }
+      "alt": "Drawing of the Snipping Tool window. The New button at its top left has an orange outline.",
+      "scene": {
+        "screen": "windows/desktop",
+        "windows": [
+          { "app": "mail", "subject": "Picture of the problem", "body": "Hi, this is what I see on my screen:" },
+          { "app": "snipping-tool" }
+        ]
+      },
+      "gesture": { "type": "click", "target": "snip-new" },
+      "highlight": "snip-new"
     },
     {
       "order": 5,
       "text": "Hold the mouse button down and drag a box around the part you want.",
-      "image": "step-05.placeholder.png",
-      "highlight": { "type": "box", "x": 25, "y": 25, "w": 50, "h": 45 }
+      "alt": "Drawing of a darkened screen. The mouse drags from one corner to the other, drawing a clear box over the part of the screen to keep.",
+      "scene": {
+        "screen": "windows/desktop",
+        "windows": [{ "app": "mail", "subject": "Picture of the problem", "body": "Hi, this is what I see on my screen:" }],
+        "snip": { "box": [28, 24, 42, 40] }
+      },
+      "gesture": { "type": "drag-box" },
+      "highlight": null
     },
     {
       "order": 6,
       "text": "Let go of the mouse button to take the picture.",
-      "image": "step-06.placeholder.png",
-      "highlight": null
+      "alt": "Drawing of a Windows screen. A message in the bottom right corner says the picture was copied, and has an orange outline.",
+      "scene": {
+        "screen": "windows/desktop",
+        "windows": [
+          { "app": "mail", "subject": "Picture of the problem", "body": "Hi, this is what I see on my screen:" },
+          { "app": "snipping-tool" }
+        ],
+        "toast": { "title": "Picture copied", "body": "It's ready to paste." }
+      },
+      "gesture": null,
+      "highlight": "toast"
     },
     {
       "order": 7,
       "text": "Click inside your email where you want the picture to go.",
-      "image": "step-07.placeholder.png",
-      "highlight": { "type": "box", "x": 20, "y": 40, "w": 60, "h": 30 }
+      "alt": "Drawing of an email being written. The empty space under the message has an orange outline.",
+      "scene": {
+        "screen": "windows/desktop",
+        "windows": [
+          { "app": "snipping-tool" },
+          { "app": "mail", "subject": "Picture of the problem", "body": "Hi, this is what I see on my screen:" }
+        ]
+      },
+      "gesture": { "type": "click", "target": "mail-body" },
+      "highlight": "mail-body"
     },
     {
       "order": 8,
       "text": "Press the button on the right side of your mouse.",
-      "image": "step-08.placeholder.png",
-      "highlight": null
+      "alt": "Drawing of an email with a small picture of a mouse in the corner. The right button of the mouse has an orange outline.",
+      "scene": {
+        "screen": "windows/desktop",
+        "windows": [
+          { "app": "snipping-tool" },
+          { "app": "mail", "subject": "Picture of the problem", "body": "Hi, this is what I see on my screen:" }
+        ],
+        "mouse": true
+      },
+      "gesture": { "type": "right-click", "target": "mail-body" },
+      "highlight": "mouse-right"
     },
     {
       "order": 9,
       "text": "Click Paste in the small list that appears.",
-      "image": "step-09.placeholder.png",
-      "highlight": { "type": "arrow", "x": 42, "y": 52, "direction": "left" }
+      "alt": "Drawing of an email with a small list open next to the mouse pointer. The word Paste in the list has an orange outline.",
+      "scene": {
+        "screen": "windows/desktop",
+        "windows": [
+          { "app": "snipping-tool" },
+          { "app": "mail", "subject": "Picture of the problem", "body": "Hi, this is what I see on my screen:" }
+        ],
+        "menu": {
+          "at": [46, 50],
+          "items": [
+            { "label": "Cut", "disabled": true },
+            { "label": "Copy", "disabled": true },
+            { "id": "menu-paste", "label": "Paste" },
+            { "label": "Font..." },
+            { "label": "Paragraph..." }
+          ]
+        }
+      },
+      "gesture": { "type": "click", "target": "menu-paste" },
+      "highlight": "menu-paste"
     }
   ]
 }
