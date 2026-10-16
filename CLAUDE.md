@@ -86,8 +86,43 @@ no drawings, but the player doesn't render them yet (Phase 4, with uploads).
 - Drafts show only when `SHOW_DRAFTS=true` (set in `.env` for local review). Player
   shows a "Draft: not checked on a real device" notice on drafts.
 
-**Next: Phase 3 (search and matching).** Before starting, read the memo's AI matching
-section (summarized above) and load the `claude-api` skill for current model IDs.
+**Phase 3 (search and matching) is in progress. Paused Oct 15; resuming with an API key.**
+
+Done so far:
+- `library/catalog.json`: all 95 planned walkthroughs (title, summary, phrasings).
+- `e2e/matching-questions.json`: 30 test + 20 practice questions, committed *before*
+  any search code. Never tune the search or the catalog to the test set; tune on
+  practice only.
+- `src/lib/scrub.ts` (+ tests, `npm run test:unit`): strips emails, phone/long
+  numbers, addresses and capitalized names before a question is searched or stored.
+  Lowercase names can slip through.
+- `src/lib/search.ts`: built-in search, no AI (Postgres word coverage + pg_trgm phrase
+  similarity + device hint), returns top 3 with a confidence for the first.
+- `npm run eval:matching`: builds a throwaway `walkthrough_eval` database from the
+  catalog and scores both question sets.
+
+Result of the built-in search alone (run once on the test set, not tuned to it):
+**25/30 right first (target 27), 30/30 in the top 3**; 18 open directly with
+confidence >= 0.75, and 1 opens the wrong one directly ("got a weird text saying i
+won a prize" -> Send a text message). Practice set: 19/20 first, 20/20 top 3.
+
+The owner chose to add AI matching (as the brief describes) and will put
+`ANTHROPIC_API_KEY` in `.env` themselves. Next steps:
+1. Load the `claude-api` skill; use the smallest fast Claude model, server-side only,
+   200 max output tokens, JSON-only reply of up to 3 slugs with confidences, prompt
+   caching on the per-org index, 4 s timeout, then fall back to `search.ts`. Validate
+   every slug against the filtered index. Model name, threshold and limits in env.
+2. Cache identical (normalized, scrubbed) questions per org for 30 days; log token
+   usage per org.
+3. Re-run `npm run eval:matching` with AI on and with the key removed (must still
+   return results). Report both scores honestly.
+4. Build the staff UI: home screen (big text box, "Speak" button via Web Speech API,
+   hidden where unsupported, popular topics), "Which of these is closest?" choices
+   page, "I couldn't find that one" page, QueryLog writes (scrubbed question, match,
+   confidence, solved yes/no from the player's ending). Logging needs an organization:
+   plan was a demo org seeded only when `SEED_DEMO_ORG=true`, until Phase 6 adds
+   access codes. Note for the report: Chrome's speech recognition sends audio to
+   Google's servers; Safari uses Apple's.
 
 ## Decisions already made
 
